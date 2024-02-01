@@ -7,7 +7,7 @@ module packet_picker
     parameter real VIDEO_RATE = 0,
     parameter bit IT_CONTENT = 1'b0,
     parameter int AUDIO_BIT_WIDTH = 0,
-    parameter int AUDIO_RATE = 0,
+    parameter int AUDIO_RATE = 48e3,
     parameter bit [8*8-1:0] VENDOR_NAME = 0,
     parameter bit [8*16-1:0] PRODUCT_DESCRIPTION = 0,
     parameter bit [7:0] SOURCE_DEVICE_INFORMATION = 0

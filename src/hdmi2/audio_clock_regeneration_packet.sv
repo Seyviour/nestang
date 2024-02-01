@@ -12,7 +12,8 @@ module audio_clock_regeneration_packet
     input logic clk_audio,
     output logic clk_audio_counter_wrap = 0,
     output logic [23:0] header,
-    output logic [55:0] sub [3:0]
+    output logic [55:0] sub
+    // output logic [55:0] sub [3:0]
 );
 
 // See Section 7.2.3, values derived from "Other" row in Tables 7-1, 7-2, 7-3.
@@ -25,7 +26,7 @@ logic internal_clk_audio_counter_wrap = 1'd0;
 always_ff @(posedge clk_audio)
 begin
     if (clk_audio_counter == CLK_AUDIO_COUNTER_END)
-    begin
+    begin  
         clk_audio_counter <= CLK_AUDIO_COUNTER_WIDTH'(0);
         internal_clk_audio_counter_wrap <= !internal_clk_audio_counter_wrap;
     end
@@ -62,6 +63,11 @@ assign header = {8'dX, 8'dX, 8'd1};
 `endif
 
 // "The four Subpackets each contain the same Audio Clock regeneration Subpacket."
+// assign sub0 = {N[7:0], N[15:8], {4'd0, N[19:16]}, cycle_time_stamp[7:0], cycle_time_stamp[15:8], {4'd0, cycle_time_stamp[19:16]}, 8'd0};
+// assign sub1 = {N[7:0], N[15:8], {4'd0, N[19:16]}, cycle_time_stamp[7:0], cycle_time_stamp[15:8], {4'd0, cycle_time_stamp[19:16]}, 8'd0};
+// assign sub2 = {N[7:0], N[15:8], {4'd0, N[19:16]}, cycle_time_stamp[7:0], cycle_time_stamp[15:8], {4'd0, cycle_time_stamp[19:16]}, 8'd0};
+// assign sub3 = {N[7:0], N[15:8], {4'd0, N[19:16]}, cycle_time_stamp[7:0], cycle_time_stamp[15:8], {4'd0, cycle_time_stamp[19:16]}, 8'd0};
+
 genvar i;
 generate
     for (i = 0; i < 4; i++)
