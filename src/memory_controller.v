@@ -9,7 +9,7 @@
 // $38_0000 - $38_07ff: Internal RAM (2KB), and 126KB unused
 // $3c_0000 - $3d_ffff: PRG RAM 128KB
 
-import configPackage::*;
+// import configPackage::*;
 
 module MemoryController(
     input clk,                // Main logic clock
@@ -41,6 +41,12 @@ module MemoryController(
 	output SDRAM_CKE,
     output [SDRAM_DATA_WIDTH/8-1:0] SDRAM_DQM
 );
+
+`ifndef CONFIG_PACKAGE  
+    `define CONFIG_PACKAGE
+    `include "tang_nano_20k/config.include"
+`endif
+
 
 reg [22:0] MemAddr;
 reg MemRD, MemWR, MemRefresh, MemInitializing;

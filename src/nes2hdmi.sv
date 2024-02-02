@@ -3,7 +3,8 @@
 
 `timescale 1ns / 1ps
 
-import configPackage::*;
+
+// import configPackage::*;
 
 module nes2hdmi (
 	input clk,      // nes clock
@@ -29,6 +30,7 @@ module nes2hdmi (
 	output [2:0] tmds_d_n,
 	output [2:0] tmds_d_p
 );
+
     // flags
     logic asp8x7_on = 1'b1;
 
@@ -47,6 +49,11 @@ module nes2hdmi (
     //
     localparam MEM_DEPTH=256*240;
     localparam MEM_ABITS=16;
+
+//    `ifndef CONFIG_PACKAGE
+//        `define CONFIG_PACKAGE
+        `include "tang_nano_20k/config.include"
+//    `endif
 
     logic [5:0] mem [0:256*240-1];
     logic [15:0] mem_portA_addr;
@@ -76,7 +83,7 @@ module nes2hdmi (
         $readmemb("background.txt", mem);
     end
 
-    localparam [0:65] LOGO [0:12] = '{
+    logic [0:65] LOGO [0:12] = {
         'b11110000110011111111001111001111111110000000000000000000000000000,
         'b11110000110011111111011111101111111110000000000000000000000000000,
         'b11111000110011100000011100100001110000000000000000000000000000000,
