@@ -12,8 +12,19 @@ module audio_info_frame
 )
 (
     output logic [23:0] header,
-    output logic [55:0] sub [3:0]
+    // output logic [55:0] sub [3:0]
+    output logic [56*4-1: 0] sub
 );
+
+// assign sub[55*4-1: ]
+
+wire [55: 0] _subg_ [3:0];
+assign sub[56*4-1: 56*3] = _subg_[3];
+assign sub[56*3-1: 56*2] = _subg_[2];
+assign sub[56*2-1: 56*1] = _subg_[1];
+assign sub[56*1-1: 56*0] = _subg_[0]; 
+
+
 
 // NOTE—HDMI requires the coding type, sample size and sample frequency fields to be set to 0 ("Refer to Stream Header") as these items are carried in the audio stream
 localparam bit [3:0] AUDIO_CODING_TYPE = 4'd0; // Refer to stream header.
@@ -47,7 +58,7 @@ generate
     end
     for (i = 0; i < 4; i++)
     begin: pb_to_sub
-        assign sub[i] = {packet_bytes[6 + i*7], packet_bytes[5 + i*7], packet_bytes[4 + i*7], packet_bytes[3 + i*7], packet_bytes[2 + i*7], packet_bytes[1 + i*7], packet_bytes[0 + i*7]};
+        assign _subg_[i] = {packet_bytes[6 + i*7], packet_bytes[5 + i*7], packet_bytes[4 + i*7], packet_bytes[3 + i*7], packet_bytes[2 + i*7], packet_bytes[1 + i*7], packet_bytes[0 + i*7]};
     end
 endgenerate
 endmodule

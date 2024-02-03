@@ -50,14 +50,52 @@ module audio_sample_packet
 (
     input logic [7:0] frame_counter,
     // See IEC 60958-1 4.4 and Annex A. 0 indicates the signal is suitable for decoding to an analog audio signal.
-    input logic [1:0] valid_bit [3:0],
+    // input logic [1:0] valid_bit [3:0],
+    input logic [2*4-1:0] valid_bit, 
     // See IEC 60958-3 Section 6. 0 indicates that no user data is being sent
-    input logic [1:0] user_data_bit [3:0],
-    input logic [23:0] audio_sample_word [3:0] [1:0],
+    // input logic [1:0] user_data_bit [3:0],
+    input logic [4*2-1:0] user_data_bit,
+    // input logic [23:0] audio_sample_word [3:0] [1:0],
+    input logic [24*4*2-1:0] audio_sample_word, 
     input logic [3:0] audio_sample_word_present,
     output logic [23:0] header,
-    output logic [55:0] sub [3:0]
+    // output logic [55:0] sub [3:0]
+    output logic [56*4-1:0] sub
 );
+
+
+logic [1:0] _valid_bit_ [3:0];
+assign _valid_bit_[0] = valid_bit[1:0];
+assign _valid_bit_[1] = valid_bit[2*2-1:2*1];
+assign _valid_bit_[2] = valid_bit[3*2-1:2*2];
+assign _valid_bit_[3] = valid_bit[4*2-1:3*2];  
+// _wide_wire_to_array_(_valid_bit_, valid_bit, 2, 4, 1);
+
+logic [1:0] _user_data_bit_ [3:0];
+assign _user_data_bit_[0] = user_data_bit[1:0];
+assign _user_data_bit_[1] = user_data_bit[2*2-1:2*1];
+assign _user_data_bit_[2] = user_data_bit[3*2-1:2*2];
+assign _user_data_bit_[3] = user_data_bit[4*2-1:3*2];  
+// _wide_wire_to_array_(_user_data_bit_, user_data_bit, 2, 4,1);
+
+logic [23:0] _audio_sample_word_ [3:0] [1:0];
+assign _audio_sample_word_[0][0] = audio_sample_word[23:0]; 
+assign _audio_sample_word_[0][1] = audio_sample_word[47:24]; 
+assign _audio_sample_word_[1][0] = audio_sample_word[71:48]; 
+assign _audio_sample_word_[1][1] = audio_sample_word[95:72]; 
+assign _audio_sample_word_[2][0] = audio_sample_word[119:96]; 
+assign _audio_sample_word_[2][1] = audio_sample_word[143:120]; 
+assign _audio_sample_word_[3][0] = audio_sample_word[167:144]; 
+assign _audio_sample_word_[3][1] = audio_sample_word[191:168]; 
+// input logic [24*4*2-1:0] audio_sample_word;
+// _wide_wire_to_array_(_audio_sample_word_, audio_sample_word, 23, 4, 2);
+
+logic [55:0] _sub_ [3:0];
+assign sub[55:0] = _sub_[0];
+assign sub[111:56] = _sub_[1];
+assign sub[167:112] = _sub_[2];
+assign sub[223:168] = _sub_[3]; 
+
 
 // Left/right channel for stereo audio
 logic [3:0] CHANNEL_LEFT = 4'd1;
@@ -89,18 +127,18 @@ generate
         end
         assign header[23 - (3-i)] = aligned_frame_counter[i] == 8'd0 && audio_sample_word_present[i];
         assign header[11 - (3-i)] = audio_sample_word_present[i];
-        assign parity_bit[i][0] = ^{channel_status_left[aligned_frame_counter[i]], user_data_bit[i][0], valid_bit[i][0], audio_sample_word[i][0]};
-        assign parity_bit[i][1] = ^{channel_status_right[aligned_frame_counter[i]], user_data_bit[i][1], valid_bit[i][1], audio_sample_word[i][1]};
+        assign parity_bit[i][0] = ^{channel_status_left[aligned_frame_counter[i]], _user_data_bit_[i][0], _valid_bit_[i][0], _audio_sample_word_[i][0]};
+        assign parity_bit[i][1] = ^{channel_status_right[aligned_frame_counter[i]], _user_data_bit_[i][1], _valid_bit_[i][1], _audio_sample_word_[i][1]};
         // See HDMI 1.4a Table 5-13: Audio Sample Subpacket.
         always_comb
         begin
             if (audio_sample_word_present[i])
-                sub[i] = {{parity_bit[i][1], channel_status_right[aligned_frame_counter[i]], user_data_bit[i][1], valid_bit[i][1], parity_bit[i][0], channel_status_left[aligned_frame_counter[i]], user_data_bit[i][0], valid_bit[i][0]}, audio_sample_word[i][1], audio_sample_word[i][0]};
+                _sub_[i] = {{parity_bit[i][1], channel_status_right[aligned_frame_counter[i]], _user_data_bit_[i][1], _valid_bit_[i][1], parity_bit[i][0], channel_status_left[aligned_frame_counter[i]], _user_data_bit_[i][0], _valid_bit_[i][0]}, _audio_sample_word_[i][1], _audio_sample_word_[i][0]};
             else
             `ifdef MODEL_TECH
-                sub[i] = 56'd0;
+                _sub_[i] = 56'd0;
             `else
-                sub[i] = 56'dx;
+                _sub_[i] = 56'dx;
             `endif
         end
     end

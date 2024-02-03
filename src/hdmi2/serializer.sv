@@ -7,153 +7,181 @@ module serializer
     input logic clk_pixel,
     input logic clk_pixel_x5,
     input logic reset,
-    input logic [9:0] tmds_internal [NUM_CHANNELS-1:0],
+    // input logic [9:0] tmds_internal [NUM_CHANNELS-1:0],
+    input logic [10*NUM_CHANNELS-1:0] tmds_internal,
     output logic [2:0] tmds,
     output logic tmds_clock
 );
 
+
+genvar i; 
+wire [9:0] _tmds_internal_ [NUM_CHANNELS-1:0]; 
+generate
+    for (i=0; i<NUM_CHANNELS; i=i+1) begin 
+       assign _tmds_internal_[i] = tmds_internal[(i+1)*10-1:i*10]; 
+    end
+endgenerate
+
+`define GW_IDE
+
 `ifndef VERILATOR
     `ifdef SYNTHESIS
         `ifndef ALTERA_RESERVED_QIS
-            // https://www.xilinx.com/support/documentation/user_guides/ug471_7Series_SelectIO.pdf
-            logic tmds_plus_clock [NUM_CHANNELS:0];
-            assign tmds_plus_clock = '{tmds_clock, tmds[2], tmds[1], tmds[0]};
-            logic [9:0] tmds_internal_plus_clock [NUM_CHANNELS:0];
-            assign tmds_internal_plus_clock = '{10'b0000011111, tmds_internal[2], tmds_internal[1], tmds_internal[0]};
-            logic [1:0] cascade [NUM_CHANNELS:0];
+            ;
 
-            // this is requried for OSERDESE2 to work
-            logic internal_reset = 1'b1;
-            always @(posedge clk_pixel)
-            begin
-                internal_reset <= 1'b0;
-            end
-            genvar i;
-            generate
-                for (i = 0; i <= NUM_CHANNELS; i++)
-                begin: xilinx_serialize
-                    OSERDESE2 #(
-                        .DATA_RATE_OQ("DDR"),
-                        .DATA_RATE_TQ("SDR"),
-                        .DATA_WIDTH(10),
-                        .SERDES_MODE("MASTER"),
-                        .TRISTATE_WIDTH(1),
-                        .TBYTE_CTL("FALSE"),
-                        .TBYTE_SRC("FALSE")
-                    ) primary (
-                        .OQ(tmds_plus_clock[i]),
-                        .OFB(),
-                        .TQ(),
-                        .TFB(),
-                        .SHIFTOUT1(),
-                        .SHIFTOUT2(),
-                        .TBYTEOUT(),
-                        .CLK(clk_pixel_x5),
-                        .CLKDIV(clk_pixel),
-                        .D1(tmds_internal_plus_clock[i][0]),
-                        .D2(tmds_internal_plus_clock[i][1]),
-                        .D3(tmds_internal_plus_clock[i][2]),
-                        .D4(tmds_internal_plus_clock[i][3]),
-                        .D5(tmds_internal_plus_clock[i][4]),
-                        .D6(tmds_internal_plus_clock[i][5]),
-                        .D7(tmds_internal_plus_clock[i][6]),
-                        .D8(tmds_internal_plus_clock[i][7]),
-                        .TCE(1'b0),
-                        .OCE(1'b1),
-                        .TBYTEIN(1'b0),
-                        .RST(reset || internal_reset),
-                        .SHIFTIN1(cascade[i][0]),
-                        .SHIFTIN2(cascade[i][1]),
-                        .T1(1'b0),
-                        .T2(1'b0),
-                        .T3(1'b0),
-                        .T4(1'b0)
-                    );
-                    OSERDESE2 #(
-                        .DATA_RATE_OQ("DDR"),
-                        .DATA_RATE_TQ("SDR"),
-                        .DATA_WIDTH(10),
-                        .SERDES_MODE("SLAVE"),
-                        .TRISTATE_WIDTH(1),
-                        .TBYTE_CTL("FALSE"),
-                        .TBYTE_SRC("FALSE")
-                    ) secondary (
-                        .OQ(),
-                        .OFB(),
-                        .TQ(),
-                        .TFB(),
-                        .SHIFTOUT1(cascade[i][0]),
-                        .SHIFTOUT2(cascade[i][1]),
-                        .TBYTEOUT(),
-                        .CLK(clk_pixel_x5),
-                        .CLKDIV(clk_pixel),
-                        .D1(1'b0),
-                        .D2(1'b0),
-                        .D3(tmds_internal_plus_clock[i][8]),
-                        .D4(tmds_internal_plus_clock[i][9]),
-                        .D5(1'b0),
-                        .D6(1'b0),
-                        .D7(1'b0),
-                        .D8(1'b0),
-                        .TCE(1'b0),
-                        .OCE(1'b1),
-                        .TBYTEIN(1'b0),
-                        .RST(reset || internal_reset),
-                        .SHIFTIN1(1'b0),
-                        .SHIFTIN2(1'b0),
-                        .T1(1'b0),
-                        .T2(1'b0),
-                        .T3(1'b0),
-                        .T4(1'b0)
-                    );
-                end
-            endgenerate
+
+            // // https://www.xilinx.com/support/documentation/user_guides/ug471_7Series_SelectIO.pdf
+            // logic tmds_plus_clock [NUM_CHANNELS:0];
+            // // assign tmds_plus_clock = '{tmds_clock, tmds[2], tmds[1], tmds[0]};
+            // assign tmds_plus_clock[0] = tmds[0];
+            // assign tmds_plus_clock[1] = tmds[1];
+            // assign tmds_plus_clock[2] = tmds[2];
+            // assign tmds_plus_clock[3] = tmds_clock; 
+
+            // generate
+            //     genvar j;
+            //     logic [9:0] tmds_internal_plus_clock [NUM_CHANNELS:0];
+            //     for (j=0; j < NUM_CHANNELS; j=j+1) begin
+            //         assign tmds_internal_plus_clock[j] = _tmds_internal_[j];
+            //     end
+            //     assign tmds_internal_plus_clock[NUM_CHANNELS] = {10'b0000011111}; 
+            //     // assign tmds_internal_plus_clock = {10'b0000011111, _tmds_internal_[2], _tmds_internal_[1], _tmds_internal_[0]};
+            // endgenerate
+            // logic [1:0] cascade [NUM_CHANNELS:0];
+
+
+            // // this is requried for OSERDESE2 to work
+            // logic internal_reset = 1'b1;
+            // always @(posedge clk_pixel)
+            // begin
+            //     internal_reset <= 1'b0;
+            // end
+            // genvar i;
+            // generate
+            //     for (i = 0; i <= NUM_CHANNELS; i++)
+            //     begin: xilinx_serialize
+            //         OSERDESE2 #(
+            //             .DATA_RATE_OQ("DDR"),
+            //             .DATA_RATE_TQ("SDR"),
+            //             .DATA_WIDTH(10),
+            //             .SERDES_MODE("MASTER"),
+            //             .TRISTATE_WIDTH(1),
+            //             .TBYTE_CTL("FALSE"),
+            //             .TBYTE_SRC("FALSE")
+            //         ) primary (
+            //             .OQ(tmds_plus_clock[i]),
+            //             .OFB(),
+            //             .TQ(),
+            //             .TFB(),
+            //             .SHIFTOUT1(),
+            //             .SHIFTOUT2(),
+            //             .TBYTEOUT(),
+            //             .CLK(clk_pixel_x5),
+            //             .CLKDIV(clk_pixel),
+            //             .D1(tmds_internal_plus_clock[i][0]),
+            //             .D2(tmds_internal_plus_clock[i][1]),
+            //             .D3(tmds_internal_plus_clock[i][2]),
+            //             .D4(tmds_internal_plus_clock[i][3]),
+            //             .D5(tmds_internal_plus_clock[i][4]),
+            //             .D6(tmds_internal_plus_clock[i][5]),
+            //             .D7(tmds_internal_plus_clock[i][6]),
+            //             .D8(tmds_internal_plus_clock[i][7]),
+            //             .TCE(1'b0),
+            //             .OCE(1'b1),
+            //             .TBYTEIN(1'b0),
+            //             .RST(reset || internal_reset),
+            //             .SHIFTIN1(cascade[i][0]),
+            //             .SHIFTIN2(cascade[i][1]),
+            //             .T1(1'b0),
+            //             .T2(1'b0),
+            //             .T3(1'b0),
+            //             .T4(1'b0)
+            //         );
+            //         OSERDESE2 #(
+            //             .DATA_RATE_OQ("DDR"),
+            //             .DATA_RATE_TQ("SDR"),
+            //             .DATA_WIDTH(10),
+            //             .SERDES_MODE("SLAVE"),
+            //             .TRISTATE_WIDTH(1),
+            //             .TBYTE_CTL("FALSE"),
+            //             .TBYTE_SRC("FALSE")
+            //         ) secondary (
+            //             .OQ(),
+            //             .OFB(),
+            //             .TQ(),
+            //             .TFB(),
+            //             .SHIFTOUT1(cascade[i][0]),
+            //             .SHIFTOUT2(cascade[i][1]),
+            //             .TBYTEOUT(),
+            //             .CLK(clk_pixel_x5),
+            //             .CLKDIV(clk_pixel),
+            //             .D1(1'b0),
+            //             .D2(1'b0),
+            //             .D3(tmds_internal_plus_clock[i][8]),
+            //             .D4(tmds_internal_plus_clock[i][9]),
+            //             .D5(1'b0),
+            //             .D6(1'b0),
+            //             .D7(1'b0),
+            //             .D8(1'b0),
+            //             .TCE(1'b0),
+            //             .OCE(1'b1),
+            //             .TBYTEIN(1'b0),
+            //             .RST(reset || internal_reset),
+            //             .SHIFTIN1(1'b0),
+            //             .SHIFTIN2(1'b0),
+            //             .T1(1'b0),
+            //             .T2(1'b0),
+            //             .T3(1'b0),
+            //             .T4(1'b0)
+            //         );
+            //     end
+            // endgenerate
         `endif
     `elsif GW_IDE
         OSER10 gwSer0( 
             .Q( tmds[ 0 ] ),
-            .D0( tmds_internal[ 0 ][ 0 ] ),
-            .D1( tmds_internal[ 0 ][ 1 ] ),
-            .D2( tmds_internal[ 0 ][ 2 ] ),
-            .D3( tmds_internal[ 0 ][ 3 ] ),
-            .D4( tmds_internal[ 0 ][ 4 ] ),
-            .D5( tmds_internal[ 0 ][ 5 ] ),
-            .D6( tmds_internal[ 0 ][ 6 ] ),
-            .D7( tmds_internal[ 0 ][ 7 ] ),
-            .D8( tmds_internal[ 0 ][ 8 ] ),
-            .D9( tmds_internal[ 0 ][ 9 ] ),
+            .D0( _tmds_internal_[ 0 ][ 0 ] ),
+            .D1( _tmds_internal_[ 0 ][ 1 ] ),
+            .D2( _tmds_internal_[ 0 ][ 2 ] ),
+            .D3( _tmds_internal_[ 0 ][ 3 ] ),
+            .D4( _tmds_internal_[ 0 ][ 4 ] ),
+            .D5( _tmds_internal_[ 0 ][ 5 ] ),
+            .D6( _tmds_internal_[ 0 ][ 6 ] ),
+            .D7( _tmds_internal_[ 0 ][ 7 ] ),
+            .D8( _tmds_internal_[ 0 ][ 8 ] ),
+            .D9( _tmds_internal_[ 0 ][ 9 ] ),
             .PCLK( clk_pixel ),
             .FCLK( clk_pixel_x5 ),
             .RESET( reset ) );
 
         OSER10 gwSer1( 
           .Q( tmds[ 1 ] ),
-          .D0( tmds_internal[ 1 ][ 0 ] ),
-          .D1( tmds_internal[ 1 ][ 1 ] ),
-          .D2( tmds_internal[ 1 ][ 2 ] ),
-          .D3( tmds_internal[ 1 ][ 3 ] ),
-          .D4( tmds_internal[ 1 ][ 4 ] ),
-          .D5( tmds_internal[ 1 ][ 5 ] ),
-          .D6( tmds_internal[ 1 ][ 6 ] ),
-          .D7( tmds_internal[ 1 ][ 7 ] ),
-          .D8( tmds_internal[ 1 ][ 8 ] ),
-          .D9( tmds_internal[ 1 ][ 9 ] ),
+          .D0( _tmds_internal_[ 1 ][ 0 ] ),
+          .D1( _tmds_internal_[ 1 ][ 1 ] ),
+          .D2( _tmds_internal_[ 1 ][ 2 ] ),
+          .D3( _tmds_internal_[ 1 ][ 3 ] ),
+          .D4( _tmds_internal_[ 1 ][ 4 ] ),
+          .D5( _tmds_internal_[ 1 ][ 5 ] ),
+          .D6( _tmds_internal_[ 1 ][ 6 ] ),
+          .D7( _tmds_internal_[ 1 ][ 7 ] ),
+          .D8( _tmds_internal_[ 1 ][ 8 ] ),
+          .D9( _tmds_internal_[ 1 ][ 9 ] ),
           .PCLK( clk_pixel ),
           .FCLK( clk_pixel_x5 ),
           .RESET( reset ) );
 
         OSER10 gwSer2( 
           .Q( tmds[ 2 ] ),
-          .D0( tmds_internal[ 2 ][ 0 ] ),
-          .D1( tmds_internal[ 2 ][ 1 ] ),
-          .D2( tmds_internal[ 2 ][ 2 ] ),
-          .D3( tmds_internal[ 2 ][ 3 ] ),
-          .D4( tmds_internal[ 2 ][ 4 ] ),
-          .D5( tmds_internal[ 2 ][ 5 ] ),
-          .D6( tmds_internal[ 2 ][ 6 ] ),
-          .D7( tmds_internal[ 2 ][ 7 ] ),
-          .D8( tmds_internal[ 2 ][ 8 ] ),
-          .D9( tmds_internal[ 2 ][ 9 ] ),
+          .D0( _tmds_internal_[ 2 ][ 0 ] ),
+          .D1( _tmds_internal_[ 2 ][ 1 ] ),
+          .D2( _tmds_internal_[ 2 ][ 2 ] ),
+          .D3( _tmds_internal_[ 2 ][ 3 ] ),
+          .D4( _tmds_internal_[ 2 ][ 4 ] ),
+          .D5( _tmds_internal_[ 2 ][ 5 ] ),
+          .D6( _tmds_internal_[ 2 ][ 6 ] ),
+          .D7( _tmds_internal_[ 2 ][ 7 ] ),
+          .D8( _tmds_internal_[ 2 ][ 8 ] ),
+          .D9( _tmds_internal_[ 2 ][ 9 ] ),
           .PCLK( clk_pixel ),
           .FCLK( clk_pixel_x5 ),
           .RESET( reset ) );
@@ -168,7 +196,7 @@ module serializer
             begin: tmds_rev
                 for (j = 0; j < 10; j++)
                 begin: tmds_rev_channel
-                    assign tmds_reversed[i][j] = tmds_internal[i][9-j];
+                    assign tmds_reversed[i][j] = _tmds_internal_[i][9-j];
                 end
             end
         endgenerate
@@ -255,7 +283,7 @@ module serializer
                     always_comb
                     begin
                         if (load)
-                            tmds_mux = tmds_internal;
+                            tmds_mux = _tmds_internal_;
                         else
                             tmds_mux = tmds_shift;
                     end

@@ -69,7 +69,8 @@ module hdmi
     // synchronous reset back to 0,0
     input logic reset,
     input logic [23:0] rgb,
-    input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
+    input logic [AUDIO_BIT_WIDTH*2-1:0] audio_sample_word,
+    // input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
 
     // These outputs go to your HDMI port
     output logic [2:0] tmds,
@@ -89,6 +90,11 @@ module hdmi
     output logic [BIT_WIDTH-1:0] screen_width,
     output logic [BIT_HEIGHT-1:0] screen_height
 );
+
+// logic [AUDIO_BIT_WIDTH-1:0] _audio_sample_word_ [1:0];
+
+// assign _audio_sample_word_[0] = audio_sample_word[AUDIO_BIT_WIDTH-1:0];
+// assign _audio_sample_word_[1] = audio_sample_word[AUDIO_BIT_WIDTH*2-1:AUDIO_BIT_WIDTH];
 
 localparam int NUM_CHANNELS = 3;
 logic hsync;
@@ -298,6 +304,13 @@ generate
         // See Section 5.2.3.4
         logic [23:0] header;
         logic [55:0] sub [3:0];
+        
+        logic [56*4-1:0] _sub_;
+        assign sub[0] = _sub_[56-1:0];
+        assign sub[1] = _sub_[56*2-1:56];
+        assign sub[2] = _sub_[56*3-1:56*2];
+        assign sub[3] = _sub_[56*4-1:56*3]; 
+
         logic video_field_end;
         assign video_field_end = cx == screen_width - 1'b1 && cy == screen_height - 1'b1;
         logic [4:0] packet_pixel_counter;
@@ -310,9 +323,9 @@ generate
             .VENDOR_NAME(VENDOR_NAME),
             .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION),
             .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)
-        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(sub));
+        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(_sub_));
         logic [8:0] packet_data;
-        packet_assembler packet_assembler (.clk_pixel(clk_pixel), .reset(reset), .data_island_period(data_island_period), .header(header), .sub(sub), .packet_data(packet_data), .counter(packet_pixel_counter));
+        packet_assembler packet_assembler (.clk_pixel(clk_pixel), .reset(reset), .data_island_period(data_island_period), .header(header), .sub(_sub_), .packet_data(packet_data), .counter(packet_pixel_counter));
 
 
         always_ff @(posedge clk_pixel)
@@ -358,6 +371,19 @@ endgenerate
 
 // All logic below relates to the production and output of the 10-bit TMDS code.
 logic [9:0] tmds_internal [NUM_CHANNELS-1:0] /* verilator public_flat */ ;
+logic [10*NUM_CHANNELS-1:0] _tmds_internal_;
+
+genvar k;
+
+generate 
+    // integer j = 10;
+    for (k=0; k<NUM_CHANNELS; k=k+1) begin
+        assign _tmds_internal_[(k+1)*10-1:k*10] = tmds_internal[k];
+        // j = j + 10; 
+    end
+endgenerate
+
+
 genvar i;
 generate
     // TMDS code production.
@@ -367,6 +393,6 @@ generate
     end
 endgenerate
 
-serializer #(.NUM_CHANNELS(NUM_CHANNELS), .VIDEO_RATE(VIDEO_RATE)) serializer(.clk_pixel(clk_pixel), .clk_pixel_x5(clk_pixel_x5), .reset(reset), .tmds_internal(tmds_internal), .tmds(tmds), .tmds_clock(tmds_clock));
+serializer #(.NUM_CHANNELS(NUM_CHANNELS), .VIDEO_RATE(VIDEO_RATE)) serializer(.clk_pixel(clk_pixel), .clk_pixel_x5(clk_pixel_x5), .reset(reset), .tmds_internal(_tmds_internal_), .tmds(tmds), .tmds_clock(tmds_clock));
 
 endmodule
