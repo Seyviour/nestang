@@ -41,7 +41,7 @@ assign sdcmd = sdcmdoe ? sdcmdout : 1'bz;
 wire sdcmdin = sdcmdoe ? 1'b1 : sdcmd;
 
 function automatic logic [6:0] CalcCrc7(input logic [6:0] crc, input logic inbit);
-    return ({{crc[5:0]},{crc[6]^inbit}} ^ {{3'b0,crc[6]}^{inbit,3'b0}});
+    return {crc[5:0],crc[6]^inbit} ^ {3'b0,crc[6]^inbit,3'b0};
 endfunction
 
 reg  [ 5:0] req_cmd = '0;    // request[45:40]
@@ -49,31 +49,13 @@ reg  [31:0] req_arg = '0;    // request[39: 8]
 reg  [ 6:0] req_crc = '0;    // request[ 7: 1]
 wire [51:0] request = {6'b111101, req_cmd, req_arg, req_crc, 1'b1};
 
-// struct packed {
-//     logic        st;
-//     logic [ 5:0] cmd;
-//     logic [31:0] arg;
-// } response = '0;
+struct packed {
+    logic        st;
+    logic [ 5:0] cmd;
+    logic [31:0] arg;
+} response = '0;
 
-
-// struct packed {
-//     logic        st;
-//     logic [ 5:0] cmd;
-//     logic [31:0] arg;
-// } response = 39'b0;
-
-logic [38:0] response; 
-
-initial begin
-    response <= 39'b0;
-end
-
-logic [5:0] response_cmd = response[37:32];
-logic st = response[38]; 
-logic response_st = response[38]; 
-
-//assign resparg = response.arg;
-assign resparg = response[31:0];
+assign resparg = response.arg;
 
 reg  [17:0] clkdivr = '1;
 reg  [17:0] clkcnt  = '0;
@@ -142,8 +124,7 @@ always @ (posedge clk or negedge rstn)
                     response <= {response[37:0], sdcmdin};
                 if(cnt4 == '0) begin
                     {done, timeout} <= 2'b10;
-                    // syntaxe <= response.st || ((response.cmd!=req_cmd) && (response.cmd!='1) && (response.cmd!='0));
-                    syntaxe <= response_st || ((response_cmd!=req_cmd) && (response_cmd!='1) && (response_cmd!='0));
+                    syntaxe <= response.st || ((response.cmd!=req_cmd) && (response.cmd!='1) && (response.cmd!='0));
                 end
             end
         end
