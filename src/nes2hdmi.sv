@@ -4,7 +4,7 @@
 `timescale 1ns / 1ps
 
 
-// import configPackage::*;
+import configPackage::*;
 
 module nes2hdmi (
 	input clk,      // nes clock
@@ -52,7 +52,7 @@ module nes2hdmi (
 
 //    `ifndef CONFIG_PACKAGE
 //        `define CONFIG_PACKAGE
-        `include "tang_nano_20k/config.include"
+        // `include "tang_nano_20k/config.include"
 //    `endif
 
     logic [5:0] mem [0:256*240-1];
@@ -83,21 +83,10 @@ module nes2hdmi (
         $readmemb("background.txt", mem);
     end
 
-    logic [0:65] LOGO [0:12] = {
-        'b11110000110011111111001111001111111110000000000000000000000000000,
-        'b11110000110011111111011111101111111110000000000000000000000000000,
-        'b11111000110011100000011100100001110000000000000000000000000000000,
-        'b11111000110011100000011100000001110000011111000111111100001111110,
-        'b11011100110011111110001110000001110000110011100111001110011100111,
-        'b11001110110011111110000111000001110000000011100110001110011000111,
-        'b11001111110011000000000011100001110000111111100110001110111000111,
-        'b11000111110011000000110011100001110001111111100110001110111000111,
-        'b11000011110011111110111111100001100001110011100110001110011001111,
-        'b11000011110011111110011111000001100000111111100110001110001111111,
-        'b00000000000000000000000000000000000000000000000000000000000000111,
-        'b00000000000000000000000000000000000000000000000000000000011001110,
-        'b00000000000000000000000000000000000000000000000000000000011111100
-    };
+    reg  [0:65] LOGO [0:12];
+    initial begin 
+        $readmemb("nestang_logo.txt", LOGO);
+    end
 
     // 
     // Data input and initial background loading
@@ -257,7 +246,7 @@ module nes2hdmi (
           .clk_audio(clk_audio),
           .rgb(rgb), 
           .reset( ~resetn ),
-          .audio_sample_word(audio_sample_word),
+          .audio_sample_word({audio_sample_word[1], audio_sample_word[0]}),
           .tmds(tmds), 
           .tmds_clock(tmdsClk), 
           .cx(cx), 
