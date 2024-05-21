@@ -8,7 +8,8 @@ module Autofire #(
     input clk,
     input resetn,
     input btn,
-    input reg out
+    output reg out
+    // output reg out
 );
 
 localparam DELAY = FREQ / FIRERATE / 2;
@@ -22,7 +23,7 @@ always @(posedge clk) begin
         if (btn) begin
             timer <= timer + 1;
             if (timer == 0) out <= ~out;
-            if (timer == DELAY-1) timer <= 0;
+            if (timer == (DELAY-1)) timer <= 0;
         end else begin
             timer <= 0;
             out <= 0;
