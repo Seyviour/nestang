@@ -39,6 +39,7 @@ module usb_hid_host (
 wire data_rdy;          // data ready
 wire data_strobe;       // data strobe for each byte
 wire [7:0] ukpdat;		// actual data
+(*mem2reg*)
 reg [7:0] regs [7];     // 0 (VID_L), 1 (VID_H), 2 (PID_L), 3 (PID_H), 4 (INTERFACE_CLASS), 5 (INTERFACE_SUBCLASS), 6 (INTERFACE_PROTOCOL)
 wire save;			    // save dat[b] to output register r
 wire [3:0] save_r;      // which register to save to

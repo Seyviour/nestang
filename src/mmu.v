@@ -688,10 +688,10 @@ module MMC5(input clk, input ce, input reset,
     
     // Override |chr_aout| if we're in a vertical split.
     if (insplit) begin
-      $write("In vertical split!\n");
+      // $write("In vertical split!\n");
       chr_aout = {2'b10, vsplit_bank, chr_ain[11:3], vscroll[2:0]};
     end else if (extended_ram_mode == 1 && is_bg_fetch) begin
-      $write("In exram thingy!\n");
+      // $write("In exram thingy!\n");
       // Extended attribute mode. Replace the page with the page from exram.
       chr_aout = {2'b10, upper_chr_bank_bits, last_read_ram[5:0], chr_ain[11:0]};
     end
@@ -1420,7 +1420,7 @@ module NesEvent(input clk, input ce, input reset,
     counter <= mmc1_chr[3] ? 0 : counter + 1;
     
     if (mmc1_chr != oldbits) begin
-      $write("NESEV Control Bits: %X => %X (%d)\n", oldbits, mmc1_chr, unlocked);
+      // $write("NESEV Control Bits: %X => %X (%d)\n", oldbits, mmc1_chr, unlocked);
       oldbits <= mmc1_chr;
     end
   end

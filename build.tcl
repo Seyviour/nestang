@@ -27,8 +27,10 @@ add_file -type verilog "src/nestang_top.sv"
 add_file -type verilog "src/ppu.v"
 add_file -type verilog "src/sd_file_list_reader.v"
 add_file -type verilog "src/sd_loader.v"
-add_file -type verilog "src/sd_reader.sv"
-add_file -type verilog "src/sdcmd_ctrl.sv"
+# add_file -type verilog "src/sd_reader.sv"
+add_file -type verilog "src/sd_reader.v"
+# add_file -type verilog "src/sdcmd_ctrl.sv"
+add_file -type verilog "src/sdcmd_ctrl.v"
 add_file -type verilog "src/sdram.v"
 add_file -type verilog "src/uart_tx_V2.v"
 add_file -type verilog "src/usb_hid_host.v"
@@ -51,5 +53,7 @@ set_option -use_done_as_gpio 1
 set_option -use_i2c_as_gpio 1
 set_option -use_cpu_as_gpio 1
 set_option -multi_boot 1
+set_option -ireg_in_iob 0
+set_option -oreg_in_iob 0
 
 run all

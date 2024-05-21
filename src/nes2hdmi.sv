@@ -3,8 +3,7 @@
 
 `timescale 1ns / 1ps
 
-
-import configPackage::*;
+//import configPackage::*;
 
 module nes2hdmi (
 	input clk,      // nes clock
@@ -31,8 +30,13 @@ module nes2hdmi (
 	output [2:0] tmds_d_p
 );
 
+    localparam CLKFRQ = 74250;
+    localparam VIDEOID = 4;
+    localparam VIDEO_REFRESH = 60.0;
+    localparam AUDIO_BIT_WIDTH = 16;
+
     // flags
-    logic asp8x7_on = 1'b1;
+    logic asp8x7_on = 1'b0;
 
     // video stuff
     wire [9:0] cy, frameHeight;
@@ -49,11 +53,6 @@ module nes2hdmi (
     //
     localparam MEM_DEPTH=256*240;
     localparam MEM_ABITS=16;
-
-//    `ifndef CONFIG_PACKAGE
-//        `define CONFIG_PACKAGE
-        // `include "tang_nano_20k/config.include"
-//    `endif
 
     logic [5:0] mem [0:256*240-1];
     logic [15:0] mem_portA_addr;
@@ -83,10 +82,25 @@ module nes2hdmi (
         $readmemb("background.txt", mem);
     end
 
-    reg  [0:65] LOGO [0:12];
-    initial begin 
+    reg [0:65] LOGO [0:12];
+    initial begin
         $readmemb("nestang_logo.txt", LOGO);
     end
+    // wire [0:65] LOGO [0:12] = '{
+    //     'b11110000110011111111001111001111111110000000000000000000000000000,
+    //     'b11110000110011111111011111101111111110000000000000000000000000000,
+    //     'b11111000110011100000011100100001110000000000000000000000000000000,
+    //     'b11111000110011100000011100000001110000011111000111111100001111110,
+    //     'b11011100110011111110001110000001110000110011100111001110011100111,
+    //     'b11001110110011111110000111000001110000000011100110001110011000111,
+    //     'b11001111110011000000000011100001110000111111100110001110111000111,
+    //     'b11000111110011000000110011100001110001111111100110001110111000111,
+    //     'b11000011110011111110111111100001100001110011100110001110011001111,
+    //     'b11000011110011111110011111000001100000111111100110001110001111111,
+    //     'b00000000000000000000000000000000000000000000000000000000000000111,
+    //     'b00000000000000000000000000000000000000000000000000000000011001110,
+    //     'b00000000000000000000000000000000000000000000000000000000011111100
+    // };
 
     // 
     // Data input and initial background loading

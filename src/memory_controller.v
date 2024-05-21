@@ -42,10 +42,10 @@ module MemoryController(
     output [SDRAM_DATA_WIDTH/8-1:0] SDRAM_DQM
 );
 
-`ifndef CONFIG_PACKAGE  
-    `define CONFIG_PACKAGE
+// `ifndef CONFIG_PACKAGE  
+    // `define CONFIG_PACKAGE
     `include "tang_nano_20k/config.include"
-`endif
+// `endif
 
 
 reg [22:0] MemAddr;

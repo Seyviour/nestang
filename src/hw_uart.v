@@ -20,7 +20,7 @@
 typedef logic [7:0] BYTE;
 
 module uart_rx 
-  #(parameter CLKS_PER_BIT)
+  #(parameter CLKS_PER_BIT=235)
   (
    input        i_Clock,
    input        i_Rx_Serial,

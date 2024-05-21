@@ -13,6 +13,7 @@ module GameLoader(input clk, input reset,
   reg [2:0] state = 0;
   reg [7:0] prgsize;
   reg [3:0] ctr;
+  (*mem2reg*)
   reg [7:0] ines[0:15]; // 16 bytes of iNES header
   reg [21:0] bytes_left;
   

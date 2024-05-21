@@ -226,6 +226,8 @@ module SpriteRAM(input clk, input ce,
                  input [7:0] data_in,       // New value for oam or oam_ptr
                  output reg spr_overflow,   // Set to true if we had more than 8 objects on a scan line. Reset when exiting vblank.
                  output reg sprite0);       // True if sprite#0 is included on the scan line currently being painted.
+
+  (*ram_style="distributed"*)
   reg [7:0] sprtemp[0:31];   // Sprite Temporary Memory. 32 bytes.
   reg [7:0] oam[0:255];      // Sprite OAM. 256 bytes.
   reg [7:0] oam_ptr;         // Pointer into oam_ptr.
@@ -242,8 +244,9 @@ module SpriteRAM(input clk, input ce,
   reg sprite0_curr;          // If sprite0 is included on the line being processed.
   reg oam_wrapped;           // [wire] if new_oam or new_p wrapped.
   
-  wire [7:0] sprtemp_data = sprtemp[sprtemp_ptr];
+  reg [7:0] sprtemp_data; //= sprtemp[sprtemp_ptr];
   always @*  begin
+    sprtemp_data = sprtemp[sprtemp_ptr];
     // Compute address to read/write in temp sprite ram
     casez({cycle[8], cycle[2]}) 
     2'b0_?: sprtemp_ptr = {p, oam_ptr[1:0]};
@@ -652,8 +655,8 @@ module PPU(input clk, input ce, input reset,   // input clock  21.48 MHz / 4. 1 
         enable_playfield <= din[3];
         enable_objects <= din[4];
         color_intensity <= din[7:5];
-        if (!din[3] && scanline == 59)
-          $write("Disabling playfield at cycle %d\n", cycle);
+        // if (!din[3] && scanline == 59)
+          // $write("Disabling playfield at cycle %d\n", cycle);
       end
       endcase
     end
