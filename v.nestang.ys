@@ -1,0 +1,57 @@
+read_verilog  -sv "src/hdmi2/audio_clock_regeneration_packet.sv"
+read_verilog  -sv "src/hdmi2/audio_info_frame.sv"
+read_verilog  -sv "src/hdmi2/audio_sample_packet.sv"
+read_verilog  -sv "src/hdmi2/auxiliary_video_information_info_frame.sv"
+read_verilog  -sv "src/hdmi2/source_product_description_info_frame.sv"
+
+
+read_verilog  -sv "src/hdmi2/packet_assembler.sv"
+read_verilog  -sv "src/hdmi2/packet_picker.sv"
+read_verilog  -sv "src/hdmi2/serializer.sv"
+read_verilog  -sv "src/hdmi2/tmds_channel.sv"
+
+read_verilog  -sv "src/MicroCode.v"
+read_verilog  -sv "src/compat.v"
+
+
+read_verilog  -sv "src/usb_hid_host_rom.v"
+
+
+read_verilog  -sv "src/cpu.v"
+read_verilog  -sv "src/mmu.v"
+read_verilog  -sv "src/ppu.v"
+read_verilog  -sv "src/apu.v"
+read_verilog  -sv "src/sdram.v"
+read_verilog  -sv "src/tang_nano_20k/config.sv"
+read_verilog  -sv "src/hdmi2/hdmi.sv"
+
+
+
+read_verilog  -sv "src/autofire.v"
+read_verilog  -sv "src/dualshock_controller.v"
+read_verilog  -sv "src/game_loader.v"
+read_verilog  -sv "src/gowin_clkdiv.v"
+ 
+
+read_verilog  -sv "src/hw_sound.v"
+read_verilog  -sv "src/hw_uart.v"
+read_verilog  -sv "src/memory_controller.v"
+read_verilog  -sv "src/nes.v"
+read_verilog  -sv "src/nes2hdmi.sv"
+read_verilog  -sv "src/uart_tx_V2.v"
+read_verilog  -sv "src/usb_hid_host.v"
+
+read_verilog  -sv src/tang_nano_20k/gowin_pll_hdmi.v
+read_verilog  -sv src/tang_nano_20k/gowin_pll_usb.v
+
+read_verilog  -sv "src/xlog2.v"
+read_verilog  -sv "src/sdcmd_ctrl.v"
+read_verilog  -sv "src/sd_reader.v"
+read_verilog  -sv  "src/sd_file_list_reader.v"
+read_verilog  -sv  "src/sd_loader.v"
+
+read_verilog  -sv "src/nestang_top.sv"
+
+#read_verilog -link -mp
+
+synth_gowin -json  nestang.synth.json 
