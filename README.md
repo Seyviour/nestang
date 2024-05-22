@@ -1,3 +1,8 @@
+# About this Branch
+This is a yosys-compatible branch of nestang; what that means is that I have replaced all constructs (mostly SystemVerilog) that are not currently supported by Yosys. I have also added a synthesis script (`v.nestang.ys`) and Makefile to make synthesis easier. Kindly you use the most recent version of Yosys along with my branches of [nextpnr]() and [apicula](). I am currently working to upstream my changes to the nextpnr and apicula code-bases.
+
+To generate the bitstream, kindly run `make all`; For synthesis only, run `make nestang.synth.json`
+
 # NESTang - NES for Sipeed Tang FPGA Boards 
 
 <p align="right">
